@@ -619,7 +619,7 @@ export default function BabyWelcomeSite() {
             <Card className="rounded-3xl shadow-2xl border-4 border-pink-200 bg-white/90 backdrop-blur-md overflow-hidden hover:shadow-3xl transition-all duration-500 cursor-pointer">
               <CardContent className="p-6 text-center space-y-4">
                 <h2 className="text-2xl font-bold text-pink-500 bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
-                  👼 {baby.nickname}
+                  👼 {index === 0 ? 'Tít' : 'Mít'}
                 </h2>
                 <div className="text-left text-base space-y-1 bg-gradient-to-br from-pink-50 to-purple-50 p-4 rounded-xl shadow-inner border border-pink-100">
                   <p><strong className="text-pink-600">👶 Tên:</strong> {baby.name}</p>
