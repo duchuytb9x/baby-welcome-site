@@ -3,13 +3,15 @@ import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
 import { motion } from "framer-motion";
 import { createPortal } from "react-dom";
+import DOMPurify from "dompurify";
 
 export default function BabyWelcomeSite() {
   const twins = [
     {
       name: "Phan Trúc Linh",
-      bornAt: "26/07/2025 08:30",
-      weight: "3.2 kg",
+      nickname: "Tit",
+      bornAt: "22/10/2025",
+      weight: "2.5 kg",
       height: "50 cm",
       hospital: "Bệnh viện Phụ sản Hà Nội",
       image: "https://i.pinimg.com/736x/05/44/2c/05442ce313dba17776639cfadef49cfc.jpg",
@@ -20,10 +22,10 @@ export default function BabyWelcomeSite() {
       ]
     },
     {
-      name: "Phan Hạ Linh",
-      bornAt: "26/07/2025 08:32",
-      weight: "3.0 kg",
-      height: "49 cm",
+      name: "Phan Hạ Linh", 
+      bornAt: "22/10/2025",
+      weight: "2.5 kg",
+      height: "50 cm",
       hospital: "Bệnh viện Phụ sản Hà Nội",
       image: "https://i.pinimg.com/736x/05/44/2c/05442ce313dba17776639cfadef49cfc.jpg",
       photos: [
@@ -45,14 +47,45 @@ export default function BabyWelcomeSite() {
   const [showConfetti, setShowConfetti] = useState(true);
   const [selectedBaby, setSelectedBaby] = useState(null);
   const [showGallery, setShowGallery] = useState(false);
-  const [guestbookMessages, setGuestbookMessages] = useState([
-    { name: "Mẹ", message: "Chào mừng hai thiên thần Phan Trúc Linh và Phan Hạ Linh! 💖", time: "2 giờ trước" },
-    { name: "Bố", message: "Hai con Phan Trúc Linh và Phan Hạ Linh là niềm hạnh phúc lớn nhất của bố mẹ! 👨‍👩‍👧‍👦", time: "1 giờ trước" },
-    { name: "Bà nội", message: "Cháu ngoan Phan Trúc Linh và Phan Hạ Linh của bà! 🥰", time: "30 phút trước" }
-  ]);
+  const [guestbookMessages, setGuestbookMessages] = useState([]);
   const [newMessage, setNewMessage] = useState({ name: "", message: "" });
-
+  const [loading, setLoading] = useState(true);
+  const [showSuccessNotification, setShowSuccessNotification] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [babyImages, setBabyImages] = useState({ Tit: [], Mit: [] });
+  
   useEffect(() => {
+    // Load lời chúc và ảnh từ backend
+    const loadData = async () => {
+      try {
+        // Load lời chúc
+        const wishesResponse = await fetch('http://localhost:5000/api/wishes');
+        if (wishesResponse.ok) {
+          const wishes = await wishesResponse.json();
+          setGuestbookMessages(wishes);
+        } else {
+          console.error('Không thể load lời chúc từ server');
+        }
+
+        // Load ảnh cho cả 2 bé
+        const [titImagesResponse, mitImagesResponse] = await Promise.all([
+          fetch('http://localhost:5000/api/images/Tit'),
+          fetch('http://localhost:5000/api/images/Mit')
+        ]);
+
+        const titImages = titImagesResponse.ok ? await titImagesResponse.json() : [];
+        const mitImages = mitImagesResponse.ok ? await mitImagesResponse.json() : [];
+
+        //setBabyImages({ Tit: titImages, Mit: mitImages });
+      } catch (error) {
+        console.error('Lỗi khi load dữ liệu:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+
     // Tự động phát nhạc khi vào màn chi tiết
     audio.volume = 0.5;
     audio.play()
@@ -127,14 +160,63 @@ export default function BabyWelcomeSite() {
     setIsPlaying(false);
   };
 
-  const addGuestbookMessage = () => {
+  // Function để sanitize input
+  const sanitizeInput = (input) => {
+    return DOMPurify.sanitize(input, { 
+      ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'br'], // Chỉ cho phép một số tag cơ bản
+      ALLOWED_ATTR: [] // Không cho phép attributes
+    });
+  };
+
+  const addGuestbookMessage = async () => {
     if (newMessage.name && newMessage.message) {
-      const message = {
-        ...newMessage,
-        time: "Vừa xong"
-      };
-      setGuestbookMessages([message, ...guestbookMessages]);
-      setNewMessage({ name: "", message: "" });
+      setIsSubmitting(true);
+      
+      // Sanitize input trước khi gửi
+      const sanitizedName = sanitizeInput(newMessage.name.trim());
+      const sanitizedMessage = sanitizeInput(newMessage.message.trim());
+      
+      if (!sanitizedName || !sanitizedMessage) {
+        alert('Tên và lời chúc không được để trống hoặc chỉ chứa ký tự đặc biệt');
+        setIsSubmitting(false);
+        return;
+      }
+
+      try {
+        const response = await fetch('http://localhost:5000/api/wishes', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: sanitizedName,
+            message: sanitizedMessage
+          })
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          // Thêm lời chúc mới vào cuối danh sách
+          setGuestbookMessages([...guestbookMessages, result.wish]);
+          setNewMessage({ name: "", message: "" });
+          
+          // Hiển thị thông báo thành công
+          setShowSuccessNotification(true);
+          
+          // Tự động ẩn thông báo sau 3 giây
+          setTimeout(() => {
+            setShowSuccessNotification(false);
+          }, 3000);
+        } else {
+          const errorData = await response.json();
+          alert(`Lỗi: ${errorData.error || 'Không thể gửi lời chúc'}`);
+        }
+      } catch (error) {
+        console.error('Lỗi khi gửi lời chúc:', error);
+        alert('Lỗi kết nối. Vui lòng thử lại sau.');
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -153,6 +235,26 @@ export default function BabyWelcomeSite() {
 
   return (
     <>
+      {/* Success Notification */}
+      {showSuccessNotification && createPortal(
+        <motion.div
+          className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-green-500 text-white px-6 py-4 rounded-2xl shadow-2xl border-2 border-green-300"
+          initial={{ opacity: 0, y: -50, scale: 0.8 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -50, scale: 0.8 }}
+          transition={{ duration: 0.5, type: "spring", stiffness: 300 }}
+        >
+          <div className="flex items-center space-x-3">
+            <div className="text-2xl">✅</div>
+            <div>
+              <div className="font-bold text-lg">Thành công!</div>
+              <div className="text-sm">Lời chúc của bạn đã được gửi thành công! 💖</div>
+            </div>
+          </div>
+        </motion.div>,
+        document.body
+      )}
+
       {/* Confetti Effect - Render trực tiếp vào body */}
       {showConfetti && createPortal(
         <div 
@@ -491,10 +593,10 @@ export default function BabyWelcomeSite() {
         style={{ cursor: 'help' }}
       >
         <h1 className="text-3xl lg:text-5xl xl:text-6xl font-extrabold text-pink-600 drop-shadow-lg animate-bounce bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
-          👶👶 Chào mừng cặp song sinh đáng yêu! 🎉
+          👶👶 Chào mừng cặp song sinh đáng yêu của bố Đức Huy và mẹ Lan Anh! 🎉
         </h1>
         <p className="text-lg lg:text-xl font-medium text-purple-700 mt-4 lg:mt-6">
-          Hai thiên thần nhỏ đã đến với thế giới này 💖💖
+          Chào mừng Hai thiên thần nhỏ đã đến với thế giới này 💖💖
         </p>
       </motion.div>
 
@@ -517,7 +619,7 @@ export default function BabyWelcomeSite() {
             <Card className="rounded-3xl shadow-2xl border-4 border-pink-200 bg-white/90 backdrop-blur-md overflow-hidden hover:shadow-3xl transition-all duration-500 cursor-pointer">
               <CardContent className="p-6 text-center space-y-4">
                 <h2 className="text-2xl font-bold text-pink-500 bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
-                  👼 Bé #{index + 1}
+                  👼 {baby.nickname}
                 </h2>
                 <div className="text-left text-base space-y-1 bg-gradient-to-br from-pink-50 to-purple-50 p-4 rounded-xl shadow-inner border border-pink-100">
                   <p><strong className="text-pink-600">👶 Tên:</strong> {baby.name}</p>
@@ -618,25 +720,35 @@ export default function BabyWelcomeSite() {
               />
             </div>
           </div>
-          <Button
-            onClick={addGuestbookMessage}
-            className="bg-gradient-to-r from-pink-500 to-purple-600 text-black px-8 py-3 rounded-full hover:from-pink-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 font-semibold text-lg shadow-lg"
-            style={{ border: '2px solid #f9a8d4', cursor: 'pointer' }}
-            whileHover={{ 
-              scale: 1.1,
-              rotate: 2,
-              boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.3)"
-            }}
-            whileTap={{ scale: 0.9 }}
-          >
-            💌 Gửi lời chúc
-          </Button>
+            <Button
+              onClick={addGuestbookMessage}
+              disabled={isSubmitting}
+              className={`px-8 py-3 rounded-full transition-all duration-300 transform font-semibold text-lg shadow-lg ${
+                isSubmitting 
+                  ? 'bg-gray-400 text-gray-600 cursor-not-allowed' 
+                  : 'bg-gradient-to-r from-pink-500 to-purple-600 text-black hover:from-pink-600 hover:to-purple-700 hover:scale-105'
+              }`}
+              style={{ border: '2px solid #f9a8d4', cursor: isSubmitting ? 'not-allowed' : 'pointer' }}
+              whileHover={!isSubmitting ? { 
+                scale: 1.1,
+                rotate: 2,
+                boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.3)"
+              } : {}}
+              whileTap={!isSubmitting ? { scale: 0.9 } : {}}
+            >
+              {isSubmitting ? '⏳ Đang gửi...' : '💌 Gửi lời chúc'}
+            </Button>
         </div>
 
         {/* Messages List */}
         <div className="mb-8 p-6 from-pink-50 to-purple-50 rounded-2xl border border-pink-200">
           <div className="space-y-4 max-h-80 overflow-y-auto">
-            {guestbookMessages.map((msg, index) => (
+            {loading ? (
+              <div className="text-center py-8">
+                <div className="text-pink-600 text-lg">🔄 Đang tải lời chúc...</div>
+              </div>
+            ) : (
+              guestbookMessages.map((msg, index) => (
               <motion.div
                 key={index}
                 className="bg-white p-6 rounded-2xl shadow-lg border-l-4 border-pink-400 hover:shadow-xl transition-all duration-300"
@@ -647,13 +759,14 @@ export default function BabyWelcomeSite() {
               >
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
-                    <p className="font-bold text-pink-600 text-lg">{msg.name}</p>
-                    <p className="text-gray-800 mt-2 text-base">{msg.message}</p>
+                    <p className="font-bold text-pink-600 text-lg" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(msg.name) }}></p>
+                    <p className="text-gray-800 mt-2 text-base" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(msg.message) }}></p>
                   </div>
                   <span className="text-xs text-gray-500 ml-4">{msg.time}</span>
                 </div>
               </motion.div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </motion.div>
@@ -734,13 +847,13 @@ export default function BabyWelcomeSite() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
               {selectedBaby.photos.map((photo, index) => (
-                <motion.img
-                  key={index}
+                  <motion.img
+                    key={index}
                   src={photo}
-                  alt={`Ảnh ${index + 1} của ${selectedBaby.name}`}
-                  className="w-full h-48 lg:h-64 object-cover rounded-2xl shadow-lg cursor-pointer hover:shadow-2xl transition-all duration-300"
-                  whileHover={{ scale: 1.05 }}
-                />
+                    alt={`Ảnh ${index + 1} của ${selectedBaby.name}`}
+                    className="w-full h-48 lg:h-64 object-cover rounded-2xl shadow-lg cursor-pointer hover:shadow-2xl transition-all duration-300"
+                    whileHover={{ scale: 1.05 }}
+                  />
               ))}
             </div>
           </motion.div>

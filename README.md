@@ -1,70 +1,126 @@
-# Getting Started with Create React App
+# Baby Welcome Site - Phan Trúc Linh & Phan Hạ Linh
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Website chào mừng cặp song sinh với backend API để quản lý lời chúc và ảnh.
 
-## Available Scripts
+## Cài đặt và chạy
 
-In the project directory, you can run:
+### 1. Cài đặt dependencies
+```bash
+npm install
+```
 
-### `npm start`
+### 2. Chạy cả frontend và backend
+```bash
+npm run dev
+```
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Lệnh này sẽ chạy đồng thời:
+- Backend server tại: http://localhost:5000
+- Frontend React tại: http://localhost:3000
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### 3. Chạy riêng lẻ
 
-### `npm test`
+**Chỉ chạy backend:**
+```bash
+npm run server
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+**Chỉ chạy frontend:**
+```bash
+npm start
+```
 
-### `npm run build`
+## API Endpoints
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### GET /api/wishes
+Lấy tất cả lời chúc
+```bash
+curl http://localhost:5000/api/wishes
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### POST /api/wishes
+Thêm lời chúc mới
+```bash
+curl -X POST http://localhost:5000/api/wishes \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Tên người", "message": "Lời chúc"}'
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### GET /api/images/:babyName
+Lấy danh sách ảnh của bé (Tit hoặc Mit)
+```bash
+curl http://localhost:5000/api/images/Tit
+curl http://localhost:5000/api/images/Mit
+```
 
-### `npm run eject`
+### DELETE /api/wishes/:index
+Xóa lời chúc theo index
+```bash
+curl -X DELETE http://localhost:5000/api/wishes/0
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Cấu trúc dự án
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```
+baby-welcome-site/
+├── server.js              # Backend Express server
+├── data/
+│   └── wishes.json        # File lưu trữ lời chúc (tự động tạo)
+├── public/
+│   └── images/
+│       ├── Tit/           # Thư mục ảnh của bé Tit (Phan Trúc Linh)
+│       └── Mit/           # Thư mục ảnh của bé Mit (Phan Hạ Linh)
+├── src/
+│   └── components/
+│       └── BabyWelcomeSite.jsx  # Frontend React component
+└── package.json
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## Quản lý ảnh
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### Thêm ảnh cho bé:
+1. **Bé Tit (Phan Trúc Linh)**: Thêm ảnh vào thư mục `public/images/Tit/`
+2. **Bé Mit (Phan Hạ Linh)**: Thêm ảnh vào thư mục `public/images/Mit/`
 
-## Learn More
+### Định dạng ảnh hỗ trợ:
+- JPG/JPEG
+- PNG
+- GIF
+- WebP
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### Cách hoạt động:
+- Ảnh đầu tiên trong thư mục sẽ làm ảnh đại diện
+- Tất cả ảnh trong thư mục sẽ hiển thị trong gallery
+- Ảnh được sắp xếp theo tên file
+- Nếu không có ảnh, sẽ hiển thị placeholder
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Tính năng
 
-### Code Splitting
+- ✅ Hiển thị thông tin cặp song sinh
+- ✅ Sổ lưu bút với lời chúc
+- ✅ Thêm lời chúc mới (lưu vào backend)
+- ✅ Load lời chúc từ backend
+- ✅ Quản lý ảnh động từ thư mục
+- ✅ Ảnh đại diện tự động (ảnh đầu tiên)
+- ✅ Gallery hiển thị tất cả ảnh
+- ✅ Hiệu ứng confetti và nhạc nền
+- ✅ Chia sẻ mạng xã hội
+- ✅ Responsive design
+- ✅ Bảo mật XSS protection
+- ✅ Rate limiting
+- ✅ Input validation
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## Bảo mật
 
-### Analyzing the Bundle Size
+- 🔒 **XSS Protection**: DOMPurify sanitization
+- 🛡️ **Rate Limiting**: Giới hạn requests
+- ✅ **Input Validation**: Kiểm tra dữ liệu đầu vào
+- 🔐 **Security Headers**: Helmet middleware
+- 📏 **Payload Limits**: Giới hạn kích thước request
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## Lưu ý
 
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- Backend server cần chạy trước khi frontend có thể load dữ liệu
+- Dữ liệu lời chúc được lưu trong file `data/wishes.json`
+- Ảnh được serve từ thư mục `public/images/`
+- File `data/wishes.json` sẽ được tạo tự động khi chạy server lần đầu
