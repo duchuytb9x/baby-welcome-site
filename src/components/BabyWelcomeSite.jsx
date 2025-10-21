@@ -522,7 +522,7 @@ export default function BabyWelcomeSite() {
       >
 
       {/* Control Buttons */}
-      <div className="fixed top-4 right-4 flex flex-col gap-2 z-50">
+      <div className="fixed bot-4 right-4 flex flex-col gap-2 z-50">
         <Button
           onClick={isPlaying ? stopAudio : playAudio}
           className="bg-gradient-to-r from-pink-500 to-pink-600 text-black rounded-full shadow-lg px-4 py-2 hover:from-pink-600 hover:to-pink-700 transition-all duration-300 transform hover:scale-105 font-semibold"

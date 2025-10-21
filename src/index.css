@@ -123,8 +123,8 @@ code {
   position: fixed;
 }
 
-.top-4 {
-  top: 1rem;
+.bot-4 {
+  bottom: 7rem;
 }
 
 .right-4 {
