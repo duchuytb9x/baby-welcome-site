@@ -6,8 +6,18 @@ const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const { body, validationResult } = require('express-validator');
 
+const express = require('express');
+const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 5555;
+
+// cho dev local + domain production (chỉ whitelist origin cần thiết)
+app.use(cors({ origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'https://your-production-domain.com'], credentials: true }));
+app.use(express.json());
+
+// xử lý preflight
+app.options('*', cors());
+// ...existing code...
 
 // Security Middleware
 app.use(helmet({
