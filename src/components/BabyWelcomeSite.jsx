@@ -59,7 +59,7 @@ export default function BabyWelcomeSite() {
     const loadData = async () => {
       try {
         // Load lời chúc
-        const wishesResponse = await fetch('http://localhost:5555/api/wishes');
+        const wishesResponse = await fetch('https://api.songlinh.online/api/wishes');
         if (wishesResponse.ok) {
           const wishes = await wishesResponse.json();
           setGuestbookMessages(wishes);
@@ -69,8 +69,8 @@ export default function BabyWelcomeSite() {
 
         // Load ảnh cho cả 2 bé
         const [titImagesResponse, mitImagesResponse] = await Promise.all([
-          fetch('http://localhost:5555/api/images/Tit'),
-          fetch('http://localhost:5555/api/images/Mit')
+          fetch('https://api.songlinh.online/api/images/Tit'),
+          fetch('https://api.songlinh.online/api/images/Mit')
         ]);
 
         const titImages = titImagesResponse.ok ? await titImagesResponse.json() : [];
@@ -183,7 +183,7 @@ export default function BabyWelcomeSite() {
       }
 
       try {
-        const response = await fetch('http://localhost:5555/api/wishes', {
+        const response = await fetch('https://api.songlinh.online/api/wishes', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
