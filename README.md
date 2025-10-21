@@ -15,7 +15,7 @@ npm run dev
 ```
 
 Lệnh này sẽ chạy đồng thời:
-- Backend server tại: http://localhost:5000
+- Backend server tại: http://localhost:5555
 - Frontend React tại: http://localhost:3000
 
 ### 3. Chạy riêng lẻ
@@ -35,13 +35,13 @@ npm start
 ### GET /api/wishes
 Lấy tất cả lời chúc
 ```bash
-curl http://localhost:5000/api/wishes
+curl http://localhost:5555/api/wishes
 ```
 
 ### POST /api/wishes
 Thêm lời chúc mới
 ```bash
-curl -X POST http://localhost:5000/api/wishes \
+curl -X POST http://localhost:5555/api/wishes \
   -H "Content-Type: application/json" \
   -d '{"name": "Tên người", "message": "Lời chúc"}'
 ```
@@ -49,14 +49,14 @@ curl -X POST http://localhost:5000/api/wishes \
 ### GET /api/images/:babyName
 Lấy danh sách ảnh của bé (Tit hoặc Mit)
 ```bash
-curl http://localhost:5000/api/images/Tit
-curl http://localhost:5000/api/images/Mit
+curl http://localhost:5555/api/images/Tit
+curl http://localhost:5555/api/images/Mit
 ```
 
 ### DELETE /api/wishes/:index
 Xóa lời chúc theo index
 ```bash
-curl -X DELETE http://localhost:5000/api/wishes/0
+curl -X DELETE http://localhost:5555/api/wishes/0
 ```
 
 ## Cấu trúc dự án
