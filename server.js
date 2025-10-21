@@ -5,9 +5,6 @@ const path = require('path');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const { body, validationResult } = require('express-validator');
-
-const express = require('express');
-const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 5555;
 
