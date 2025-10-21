@@ -9,7 +9,7 @@ const app = express();
 const PORT = process.env.PORT || 5555;
 
 // cho dev local + domain production (chỉ whitelist origin cần thiết)
-app.use(cors({ origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'https://your-production-domain.com'], credentials: true }));
+app.use(cors({ origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'https://songlinh.online'], credentials: true }));
 app.use(express.json());
 
 // xử lý preflight
@@ -42,10 +42,6 @@ const postLimiter = rateLimit({
 });
 
 app.use(limiter);
-app.use(cors({
-  origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
-  credentials: true
-}));
 app.use(express.json({ limit: '1mb' })); // Limit JSON payload size
 
 // Serve static images
